@@ -1,4 +1,4 @@
-const WEB_APP_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzFc9dgpjcD3CQOjeeiXkeBvETiF21d74jt6e-SuKJ5oDfssq2ANXTe8ndln42rBLiFGg/exec";
 
 let sheetData = [];
 let highlights = [];
@@ -208,3 +208,4 @@ function exportCSV() {
   a.download = "search_results.csv";
   a.click();
 }
+
