@@ -1,175 +1,126 @@
-// 🔗 GOOGLE APPS SCRIPT WEB APP URL
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzFc9dgpjcD3CQOjeeiXkeBvETiF21d74jt6e-SuKJ5oDfssq2ANXTe8ndln42rBLiFGg/exec";
 
-// DATA
-let sheetData = [];
-let highlights = [];
-let currentIndex = -1;
-let cellMap = {};
+let sheetData=[], highlights=[], currentIndex=-1, cellMap={};
 
-// GROUP DEFINITIONS
 const groups = {
-  Group55:["00","05","50","55"],
-  Group11:["11","16","61","66"],
-  Group33:["33","38","83","88"],
-  Group44:["44","49","94","99"],
-  Group22:["22","27","72","77"],
-  Group12:["12","17","21","26","62","67","71","76"],
-  Group13:["13","18","31","36","63","68","81","86"],
-  Group14:["14","19","41","46","64","69","91","96"],
-  Group15:["01","06","10","15","51","56","60","65"],
-  Group23:["23","28","32","37","73","78","82","87"],
-  Group24:["24","29","42","47","74","79","92","97"],
-  Group25:["02","07","20","25","52","57","70","75"],
-  Group34:["34","39","43","48","84","89","93","98"],
-  Group35:["03","08","30","35","53","58","80","85"],
-  Group45:["04","09","40","45","54","59","90","95"]
+ Group55:["00","05","50","55"],Group11:["11","16","61","66"],
+ Group33:["33","38","83","88"],Group44:["44","49","94","99"],
+ Group22:["22","27","72","77"],Group12:["12","17","21","26","62","67","71","76"],
+ Group13:["13","18","31","36","63","68","81","86"],Group14:["14","19","41","46","64","69","91","96"],
+ Group15:["01","06","10","15","51","56","60","65"],Group23:["23","28","32","37","73","78","82","87"],
+ Group24:["24","29","42","47","74","79","92","97"],Group25:["02","07","20","25","52","57","70","75"],
+ Group34:["34","39","43","48","84","89","93","98"],Group35:["03","08","30","35","53","58","80","85"],
+ Group45:["04","09","40","45","54","59","90","95"]
 };
 
-function normalize(v) {
-  if (v === null || v === undefined) return "";
-
-  // ✅ HANDLE REAL DATE OBJECTS (THIS IS THE FIX)
-  if (v instanceof Date) {
-    const dd = String(v.getDate()).padStart(2, "0");
-    const mm = String(v.getMonth() + 1).padStart(2, "0");
-    const yyyy = v.getFullYear();
-    return `${dd}-${mm}-${yyyy}`;
-  }
-
-  // ✅ HANDLE ISO DATE STRING (SAFETY)
-  if (typeof v === "string" && !isNaN(Date.parse(v))) {
-    const d = new Date(v);
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear();
-    return `${dd}-${mm}-${yyyy}`;
-  }
-
-  // ✅ NUMBERS → 2 DIGITS
-  if (typeof v === "number") return String(v).padStart(2, "0");
-
-  if (/^\d+$/.test(v)) return v.padStart(2, "0");
-
-  return v;
+function normalize(v){
+ if(v==null) return "";
+ if(v instanceof Date){
+  return `${String(v.getDate()).padStart(2,"0")}-${String(v.getMonth()+1).padStart(2,"0")}-${v.getFullYear()}`;
+ }
+ if(typeof v==="number") return String(v).padStart(2,"0");
+ if(/^\d+$/.test(v)) return v.padStart(2,"0");
+ return v;
 }
 
-// INIT
-window.onload = function () {
-  for (let g in groups) {
-    searchGroup.innerHTML += `<option>${g}</option>`;
-    resultGroup1.innerHTML += `<option>${g}</option>`;
-    resultGroup2.innerHTML += `<option>${g}</option>`;
-  }
-  loadSheet();
+window.onload=()=>{
+ for(let g in groups){
+  searchGroup.innerHTML+=`<option>${g}</option>`;
+  resultGroup1.innerHTML+=`<option>${g}</option>`;
+  resultGroup2.innerHTML+=`<option>${g}</option>`;
+ }
+ loadSheet();
 };
 
-// LOAD DATA
-function loadSheet() {
-  fetch(WEB_APP_URL)
-    .then(r => r.text())
-    .then(t => {
-      sheetData = JSON.parse(t);
-      renderTable();
-    })
-    .catch(() => alert("Failed to load Google Sheet"));
+function toggleMode(){
+ groupBox.classList.toggle("hidden",searchMode.value==="value");
+ valueBox.classList.toggle("hidden",searchMode.value==="group");
+ resetAll();
 }
 
-// RENDER TABLE ONCE
-function renderTable() {
-  let html = "<table>";
-  cellMap = {};
+function loadSheet(){
+ fetch(WEB_APP_URL).then(r=>r.text()).then(t=>{
+  sheetData=JSON.parse(t); renderTable();
+ });
+}
 
-  sheetData.forEach((row, r) => {
-    html += "<tr>";
-    row.forEach((cell, c) => {
-      const id = `cell-${r}-${c}`;
-      cellMap[id] = {r,c};
-      html += `<td id="${id}">${normalize(cell)}</td>`;
-    });
-    html += "</tr>";
+function renderTable(){
+ let h="<table>"; cellMap={};
+ sheetData.forEach((row,r)=>{
+  h+="<tr>";
+  row.forEach((c,i)=>{
+   const id=`cell-${r}-${i}`;
+   cellMap[id]={r,i};
+   h+=`<td id="${id}">${normalize(c)}</td>`;
   });
-
-  html += "</table>";
-  table.innerHTML = html;
+  h+="</tr>";
+ });
+ h+="</table>"; table.innerHTML=h;
 }
 
-// CLEAR
-function resetAll() {
-  highlights = [];
-  currentIndex = -1;
-  Object.keys(cellMap).forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.className = "";
+function resetAll(){
+ highlights=[]; currentIndex=-1;
+ Object.keys(cellMap).forEach(id=>{
+  const el=document.getElementById(id); if(el) el.className="";
+ });
+}
+
+function isValid(v){ return /^\d{1,2}$/.test(v); }
+
+function search(){
+ resetAll();
+ if(searchMode.value==="group"){ runGroup(); } else { runValue(); }
+}
+
+function runGroup(){
+ const sCol=+searchCol.value;
+ const r1=+resultCol1.value, r2=resultCol2.value?+resultCol2.value:null;
+ const sVals=groups[searchGroup.value], rv1=groups[resultGroup1.value], rv2=r2?groups[resultGroup2.value]:[];
+
+ sheetData.forEach((row,r)=>{
+  row.forEach((c,i)=>{
+   const v=normalize(c); const el=document.getElementById(`cell-${r}-${i}`);
+   if(!el) return;
+   if(i===sCol && sVals.includes(v)){ el.className="search"; highlights.push({r,i}); }
+   if(i===r1 && rv1.includes(v)) el.className="result";
+   if(r2!==null && i===r2 && rv2.includes(v)) el.className="result2";
   });
+ });
 }
 
-// SEARCH
-function search() {
-  resetAll();
+function runValue(){
+ const sCol=+searchCol.value;
+ const sv=normalize(searchValue.value);
+ const r1=+valResultCol1.value, rv1=normalize(resultValue1.value);
+ const r2=valResultCol2.value?+valResultCol2.value:null;
+ const rv2=normalize(resultValue2.value);
 
-  const sCol = parseInt(searchCol.value);
-  const rCol1 = parseInt(resultCol1.value);
-  const rCol2 = resultCol2.value ? parseInt(resultCol2.value) : null;
-
-  const sVals = groups[searchGroup.value] || [];
-  const rVals1 = groups[resultGroup1.value] || [];
-  const rVals2 = rCol2 !== null ? groups[resultGroup2.value] || [] : [];
-
-  sheetData.forEach((row, r) => {
-    row.forEach((cell, c) => {
-      const v = normalize(cell);
-      const el = document.getElementById(`cell-${r}-${c}`);
-      if (!el) return;
-
-      if (c === sCol && sVals.includes(v)) {
-        el.className = "search";
-        highlights.push({r,c});
-      }
-      if (c === rCol1 && rVals1.includes(v)) el.className = "result";
-      if (rCol2 !== null && c === rCol2 && rVals2.includes(v)) el.className = "result2";
-    });
+ sheetData.forEach((row,r)=>{
+  row.forEach((c,i)=>{
+   const v=normalize(c); const el=document.getElementById(`cell-${r}-${i}`);
+   if(!el || !isValid(v)) return;
+   if(i===sCol && v===sv){ el.className="search"; highlights.push({r,i}); }
+   if(i===r1 && v===rv1) el.className="result";
+   if(r2!==null && i===r2 && v===rv2) el.className="result2";
   });
-
-  if (highlights.length === 0) alert("No search matches found");
+ });
 }
 
-// NAVIGATION
-function next() {
-  if (!highlights.length) return;
-  currentIndex = (currentIndex + 1) % highlights.length;
-  scrollToCell(highlights[currentIndex]);
+function next(){ if(!highlights.length) return;
+ currentIndex=(currentIndex+1)%highlights.length; scroll(highlights[currentIndex]); }
+function prev(){ if(!highlights.length) return;
+ currentIndex=(currentIndex-1+highlights.length)%highlights.length; scroll(highlights[currentIndex]); }
+
+function scroll(p){
+ document.getElementById(`cell-${p.r}-${p.i}`)?.scrollIntoView({behavior:"smooth",block:"center"});
 }
 
-function prev() {
-  if (!highlights.length) return;
-  currentIndex = (currentIndex - 1 + highlights.length) % highlights.length;
-  scrollToCell(highlights[currentIndex]);
+function exportCSV(){
+ if(!highlights.length) return alert("No data");
+ const rows=[...new Set(highlights.map(h=>h.r))];
+ let csv="";
+ rows.forEach(r=>csv+=sheetData[r].map(v=>normalize(v)).join(",")+"\n");
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ a.download="search_results.csv"; a.click();
 }
-
-function scrollToCell(p) {
-  const el = document.getElementById(`cell-${p.r}-${p.c}`);
-  if (el) el.scrollIntoView({behavior:"smooth",block:"center",inline:"center"});
-}
-
-// EXPORT CSV
-function exportCSV() {
-  if (!highlights.length) {
-    alert("No data to export");
-    return;
-  }
-
-  const rows = new Set(highlights.map(h => h.r));
-  let csv = "";
-
-  rows.forEach(r => {
-    csv += sheetData[r].map(v => normalize(v)).join(",") + "\n";
-  });
-
-  const blob = new Blob([csv], {type:"text/csv"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "group_search_results.csv";
-  a.click();
-}
-
