@@ -29,6 +29,7 @@ window.onload=()=>{
   resultGroup1.innerHTML+=`<option>${g}</option>`;
   resultGroup2.innerHTML+=`<option>${g}</option>`;
  }
+ toggleMode(); 
  loadSheet();
 };
 
@@ -124,3 +125,4 @@ function exportCSV(){
  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
  a.download="search_results.csv"; a.click();
 }
+
