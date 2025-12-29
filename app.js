@@ -81,7 +81,13 @@ function renderTable() {
     row.forEach((c, i) => {
       const id = `cell-${r}-${i}`;
       cellMap[id] = { r, i };
-      html += `<td id="${id}">${normalizeForDisplay(c)}</td>`;
+      const displayVal = normalizeForDisplay(c);
+const compareVal = normalizeForCompare(c);
+
+const cls = compareVal !== "" ? "num" : "";
+
+html += `<td id="${id}" class="${cls}">${displayVal}</td>`;
+
     });
     html += "</tr>";
   });
@@ -191,3 +197,4 @@ function exportCSV() {
   a.download = "search_results.csv";
   a.click();
 }
+
