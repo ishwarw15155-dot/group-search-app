@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Group Search App</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 10px;
+      margin: 0;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    select, button {
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    @media (min-width: 700px) {
+      .row {
+        flex-direction: row;
+        gap: 10px;
+      }
+      .row > div {
+        flex: 1;
+      }
+    }
+
+    .btn-bar {
+      position: sticky;
+      top: 0;
+      background: #ffffff;
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    td, th {
+      border: 1px solid #999;
+      padding: 6px;
+      text-align: center;
+      min-width: 60px;
+    }
+
+    .search {
+      background-color: lightgreen;
+    }
+
+    .result {
+      background-color: yellow;
+    }
+
+    .result2 {
+      background-color: pink;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Group Search (Excel VBA Logic)</h2>
+
+<!-- SEARCH -->
+<div class="row">
+  <div>
+    <label>Search Column</label>
+    <select id="searchCol">
+      <option value="1">B</option>
+      <option value="2">C</option>
+      <option value="3">D</option>
+      <option value="4">E</option>
+      <option value="5">F</option>
+      <option value="6">G</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Search Group</label>
+    <select id="searchGroup"></select>
+  </div>
+</div>
+
+<!-- RESULT 1 -->
+<div class="row">
+  <div>
+    <label>Result Column 1</label>
+    <select id="resultCol1">
+      <option value="1">B</option>
+      <option value="2">C</option>
+      <option value="3">D</option>
+      <option value="4">E</option>
+      <option value="5">F</option>
+      <option value="6">G</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Result Group 1</label>
+    <select id="resultGroup1"></select>
+  </div>
+</div>
+
+<!-- RESULT 2 -->
+<div class="row">
+  <div>
+    <label>Result Column 2</label>
+    <select id="resultCol2">
+      <option value="">None</option>
+      <option value="1">B</option>
+      <option value="2">C</option>
+      <option value="3">D</option>
+      <option value="4">E</option>
+      <option value="5">F</option>
+      <option value="6">G</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Result Group 2</label>
+    <select id="resultGroup2"></select>
+  </div>
+</div>
+
+<!-- BUTTONS -->
+<div class="btn-bar">
+  <button onclick="search()">Search</button>
+  <button onclick="next()">Next</button>
+  <button onclick="prev()">Previous</button>
+  <button onclick="resetAll()">Reset</button>
+</div>
+
+<!-- TABLE -->
+<div id="table"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
