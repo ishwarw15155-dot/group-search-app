@@ -1,11 +1,11 @@
 // 🔗 GOOGLE APPS SCRIPT WEB APP URL
-const WEB_APP_URL =
-"https://script.google.com/macros/s/AKfycbzFc9dgpjcD3CQOjeeiXkeBvETiF21d74jt6e-SuKJ5oDfssq2ANXTe8ndln42rBLiFGg/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzFc9dgpjcD3CQOjeeiXkeBvETiF21d74jt6e-SuKJ5oDfssq2ANXTe8ndln42rBLiFGg/exec";
 
-// STORAGE
+// DATA
 let sheetData = [];
 let highlights = [];
 let currentIndex = -1;
+let cellMap = {};
 
 // GROUP DEFINITIONS
 const groups = {
@@ -26,45 +26,50 @@ const groups = {
   Group45:["04","09","40","45","54","59","90","95"]
 };
 
-// FORMAT VALUE TO 2 DIGITS
-function normalize(val) {
-  if (val === null || val === undefined) return "";
-  if (typeof val === "number") return String(val).padStart(2,"0");
-  if (/^\d+$/.test(val)) return val.padStart(2,"0");
-  return val;
+// FORMAT TO 2 DIGITS
+function normalize(v) {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "number") return String(v).padStart(2,"0");
+  if (/^\d+$/.test(v)) return v.padStart(2,"0");
+  return v;
 }
 
-// LOAD GROUP DROPDOWNS + DATA
+// INIT
 window.onload = function () {
   for (let g in groups) {
-    searchGroup.innerHTML += `<option value="${g}">${g}</option>`;
-    resultGroup1.innerHTML += `<option value="${g}">${g}</option>`;
-    resultGroup2.innerHTML += `<option value="${g}">${g}</option>`;
+    searchGroup.innerHTML += `<option>${g}</option>`;
+    resultGroup1.innerHTML += `<option>${g}</option>`;
+    resultGroup2.innerHTML += `<option>${g}</option>`;
   }
   loadSheet();
 };
 
-// LOAD GOOGLE SHEET
+// LOAD DATA
 function loadSheet() {
   fetch(WEB_APP_URL)
-    .then(res => res.text())
-    .then(txt => {
-      sheetData = JSON.parse(txt);
+    .then(r => r.text())
+    .then(t => {
+      sheetData = JSON.parse(t);
       renderTable();
     })
     .catch(() => alert("Failed to load Google Sheet"));
 }
 
-// RENDER TABLE (NO HIGHLIGHT)
+// RENDER TABLE ONCE
 function renderTable() {
   let html = "<table>";
-  sheetData.forEach(row => {
+  cellMap = {};
+
+  sheetData.forEach((row, r) => {
     html += "<tr>";
-    row.forEach(cell => {
-      html += `<td>${normalize(cell)}</td>`;
+    row.forEach((cell, c) => {
+      const id = `cell-${r}-${c}`;
+      cellMap[id] = {r,c};
+      html += `<td id="${id}">${normalize(cell)}</td>`;
     });
     html += "</tr>";
   });
+
   html += "</table>";
   table.innerHTML = html;
 }
@@ -73,10 +78,13 @@ function renderTable() {
 function resetAll() {
   highlights = [];
   currentIndex = -1;
-  renderTable();
+  Object.keys(cellMap).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = "";
+  });
 }
 
-// SEARCH + HIGHLIGHT
+// SEARCH
 function search() {
   resetAll();
 
@@ -86,63 +94,61 @@ function search() {
 
   const sVals = groups[searchGroup.value] || [];
   const rVals1 = groups[resultGroup1.value] || [];
-  const rVals2 = resultCol2.value ? groups[resultGroup2.value] : [];
-
-  let html = "<table>";
+  const rVals2 = rCol2 !== null ? groups[resultGroup2.value] || [] : [];
 
   sheetData.forEach((row, r) => {
-    html += "<tr>";
     row.forEach((cell, c) => {
       const v = normalize(cell);
-      let cls = "";
+      const el = document.getElementById(`cell-${r}-${c}`);
+      if (!el) return;
 
       if (c === sCol && sVals.includes(v)) {
-        cls = "search";
+        el.className = "search";
         highlights.push({r,c});
       }
-
-      if (c === rCol1 && rVals1.includes(v)) {
-        cls = "result";
-      }
-
-      if (rCol2 !== null && c === rCol2 && rVals2.includes(v)) {
-        cls = "result2";
-      }
-
-      html += `<td id="cell-${r}-${c}" class="${cls}">${v}</td>`;
+      if (c === rCol1 && rVals1.includes(v)) el.className = "result";
+      if (rCol2 !== null && c === rCol2 && rVals2.includes(v)) el.className = "result2";
     });
-    html += "</tr>";
   });
 
-  html += "</table>";
-  table.innerHTML = html;
-
-  if (highlights.length === 0) {
-    alert("No search matches found");
-  }
+  if (highlights.length === 0) alert("No search matches found");
 }
 
-// NEXT / PREVIOUS
+// NAVIGATION
 function next() {
-  if (highlights.length === 0) return;
+  if (!highlights.length) return;
   currentIndex = (currentIndex + 1) % highlights.length;
   scrollToCell(highlights[currentIndex]);
 }
 
 function prev() {
-  if (highlights.length === 0) return;
+  if (!highlights.length) return;
   currentIndex = (currentIndex - 1 + highlights.length) % highlights.length;
   scrollToCell(highlights[currentIndex]);
 }
 
-// SCROLL TO CELL
-function scrollToCell(pos) {
-  const el = document.getElementById(`cell-${pos.r}-${pos.c}`);
-  if (el) {
-    el.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-      inline: "center"
-    });
+function scrollToCell(p) {
+  const el = document.getElementById(`cell-${p.r}-${p.c}`);
+  if (el) el.scrollIntoView({behavior:"smooth",block:"center",inline:"center"});
+}
+
+// EXPORT CSV
+function exportCSV() {
+  if (!highlights.length) {
+    alert("No data to export");
+    return;
   }
+
+  const rows = new Set(highlights.map(h => h.r));
+  let csv = "";
+
+  rows.forEach(r => {
+    csv += sheetData[r].map(v => normalize(v)).join(",") + "\n";
+  });
+
+  const blob = new Blob([csv], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "group_search_results.csv";
+  a.click();
 }
