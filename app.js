@@ -152,3 +152,4 @@ function exportCSV() {
   a.download = "group_search_results.csv";
   a.click();
 }
+
