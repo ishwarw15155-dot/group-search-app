@@ -16,22 +16,19 @@ const groups = {
 function normalize(v) {
   if (v === null || v === undefined) return "";
 
-  // ✅ CASE 1: Real Date object
-  if (v instanceof Date) {
-    return formatDate(v);
+  // ✅ FORCE FORMAT ANY ISO / GOOGLE DATE STRING
+  // Matches: 1973-05-01 or 1973-05-01T18:30:00.000Z
+  if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}/.test(v)) {
+    const parts = v.substring(0, 10).split("-");
+    return `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
   }
 
-  // ✅ CASE 2: ISO date string (1973-05-01T18:30:00.000Z)
-  if (typeof v === "string" && v.includes("T") && !isNaN(Date.parse(v))) {
-    return formatDate(new Date(v));
-  }
-
-  // ✅ CASE 3: Numbers → 2 digits
+  // ✅ NUMBERS → 2 DIGITS
   if (typeof v === "number") {
     return String(v).padStart(2, "0");
   }
 
-  // ✅ CASE 4: Numeric strings → 2 digits
+  // ✅ NUMERIC STRINGS → 2 DIGITS
   if (/^\d+$/.test(v)) {
     return v.padStart(2, "0");
   }
@@ -39,12 +36,6 @@ function normalize(v) {
   return v;
 }
 
-function formatDate(d) {
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `${dd}-${mm}-${yyyy}`;
-}
 
 }
 
@@ -150,5 +141,6 @@ function exportCSV(){
  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
  a.download="search_results.csv"; a.click();
 }
+
 
 
