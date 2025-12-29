@@ -78,22 +78,32 @@ function renderTable() {
 
   sheetData.forEach((row, r) => {
     html += "<tr>";
-    row.forEach((c, i) => {
-      const id = `cell-${r}-${i}`;
-      cellMap[id] = { r, i };
-      const displayVal = normalizeForDisplay(c);
-const compareVal = normalizeForCompare(c);
 
-const cls = compareVal !== "" ? "num" : "";
+    row.forEach((cell, c) => {
+      const id = `cell-${r}-${c}`;
+      cellMap[id] = { r, c };
 
-html += `<td id="${id}" class="${cls}">${displayVal}</td>`;
+      const displayVal = normalizeForDisplay(cell);
 
+      // 🔵 BOLD ONLY PURE NUMBERS 0–99
+      let cls = "";
+      if (
+        (typeof cell === "number" && cell >= 0 && cell <= 99) ||
+        (typeof cell === "string" && /^\d{1,2}$/.test(cell))
+      ) {
+        cls = "num";
+      }
+
+      html += `<td id="${id}" class="${cls}">${displayVal}</td>`;
     });
+
     html += "</tr>";
   });
 
   html += "</table>";
   table.innerHTML = html;
+}
+
 }
 
 function resetAll() {
@@ -197,4 +207,5 @@ function exportCSV() {
   a.download = "search_results.csv";
   a.click();
 }
+
 
