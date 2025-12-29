@@ -26,11 +26,24 @@ const groups = {
   Group45:["04","09","40","45","54","59","90","95"]
 };
 
-// FORMAT TO 2 DIGITS
+// ✅ NORMALIZE VALUE (DATE + 2-DIGIT NUMBER)
 function normalize(v) {
   if (v === null || v === undefined) return "";
-  if (typeof v === "number") return String(v).padStart(2,"0");
-  if (/^\d+$/.test(v)) return v.padStart(2,"0");
+
+  // DATE FIX (ISO STRING → DD-MM-YYYY)
+  if (typeof v === "string" && v.includes("T") && !isNaN(Date.parse(v))) {
+    const d = new Date(v);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
+
+  // NUMBER → 2 DIGITS
+  if (typeof v === "number") return String(v).padStart(2, "0");
+
+  if (/^\d+$/.test(v)) return v.padStart(2, "0");
+
   return v;
 }
 
@@ -152,4 +165,3 @@ function exportCSV() {
   a.download = "group_search_results.csv";
   a.click();
 }
-
