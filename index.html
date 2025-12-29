@@ -5,6 +5,10 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Icons -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
     body {
       font-family: Arial;
@@ -54,7 +58,8 @@
       border-bottom: 1px solid #ccc;
       z-index: 100;
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     table {
@@ -70,17 +75,9 @@
       min-width: 60px;
     }
 
-    .search {
-      background-color: lightgreen;
-    }
-
-    .result {
-      background-color: yellow;
-    }
-
-    .result2 {
-      background-color: pink;
-    }
+    .search { background-color: lightgreen; }
+    .result { background-color: yellow; }
+    .result2 { background-color: pink; }
   </style>
 </head>
 
@@ -151,16 +148,15 @@
 
 <!-- BUTTONS -->
 <div class="btn-bar">
-  <button onclick="search()">Search</button>
-  <button onclick="next()">Next</button>
-  <button onclick="prev()">Previous</button>
-  <button onclick="resetAll()">Reset</button>
+  <button onclick="search()"><i class="fa fa-search"></i> Search</button>
+  <button onclick="next()"><i class="fa fa-arrow-down"></i> Next</button>
+  <button onclick="prev()"><i class="fa fa-arrow-up"></i> Previous</button>
+  <button onclick="resetAll()"><i class="fa fa-rotate-left"></i> Reset</button>
+  <button onclick="exportCSV()"><i class="fa fa-file-csv"></i> Export</button>
 </div>
 
-<!-- TABLE -->
 <div id="table"></div>
 
 <script src="app.js"></script>
-
 </body>
 </html>
