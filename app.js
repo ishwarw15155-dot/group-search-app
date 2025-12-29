@@ -26,12 +26,19 @@ const groups = {
   Group45:["04","09","40","45","54","59","90","95"]
 };
 
-// ✅ NORMALIZE VALUE (DATE + 2-DIGIT NUMBER)
 function normalize(v) {
   if (v === null || v === undefined) return "";
 
-  // DATE FIX (ISO STRING → DD-MM-YYYY)
-  if (typeof v === "string" && v.includes("T") && !isNaN(Date.parse(v))) {
+  // ✅ HANDLE REAL DATE OBJECTS (THIS IS THE FIX)
+  if (v instanceof Date) {
+    const dd = String(v.getDate()).padStart(2, "0");
+    const mm = String(v.getMonth() + 1).padStart(2, "0");
+    const yyyy = v.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
+
+  // ✅ HANDLE ISO DATE STRING (SAFETY)
+  if (typeof v === "string" && !isNaN(Date.parse(v))) {
     const d = new Date(v);
     const dd = String(d.getDate()).padStart(2, "0");
     const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -39,7 +46,7 @@ function normalize(v) {
     return `${dd}-${mm}-${yyyy}`;
   }
 
-  // NUMBER → 2 DIGITS
+  // ✅ NUMBERS → 2 DIGITS
   if (typeof v === "number") return String(v).padStart(2, "0");
 
   if (/^\d+$/.test(v)) return v.padStart(2, "0");
@@ -165,3 +172,4 @@ function exportCSV() {
   a.download = "group_search_results.csv";
   a.click();
 }
+
