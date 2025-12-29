@@ -1,4 +1,4 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzFc9dgpjcD3CQOjeeiXkeBvETiF21d74jt6e-SuKJ5oDfssq2ANXTe8ndln42rBLiFGg/exec";
+const WEB_APP_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
 
 let sheetData = [];
 let highlights = [];
@@ -24,7 +24,7 @@ const groups = {
   Group45:["04","09","40","45","54","59","90","95"]
 };
 
-// DISPLAY ONLY
+// DISPLAY FORMAT
 function normalizeForDisplay(v) {
   if (v === null || v === undefined) return "";
 
@@ -39,7 +39,7 @@ function normalizeForDisplay(v) {
   return v;
 }
 
-// COMPARE ONLY
+// SEARCH COMPARE FORMAT
 function normalizeForCompare(v) {
   if (v === null || v === undefined) return "";
   if (typeof v === "number") return String(v).padStart(2, "0");
@@ -47,6 +47,7 @@ function normalizeForCompare(v) {
   return "";
 }
 
+// INIT
 window.onload = () => {
   for (let g in groups) {
     searchGroup.innerHTML += `<option>${g}</option>`;
@@ -57,12 +58,14 @@ window.onload = () => {
   loadSheet();
 };
 
+// MODE SWITCH
 function toggleMode() {
   groupBox.classList.toggle("hidden", searchMode.value === "value");
   valueBox.classList.toggle("hidden", searchMode.value === "group");
   resetAll();
 }
 
+// LOAD DATA
 function loadSheet() {
   fetch(WEB_APP_URL)
     .then(r => r.text())
@@ -72,21 +75,20 @@ function loadSheet() {
     });
 }
 
+// RENDER TABLE
 function renderTable() {
   let html = "<table>";
   cellMap = {};
 
   sheetData.forEach((row, r) => {
     html += "<tr>";
-
     row.forEach((cell, c) => {
       const id = `cell-${r}-${c}`;
       cellMap[id] = { r, c };
 
       const displayVal = normalizeForDisplay(cell);
-
-      // 🔵 BOLD ONLY PURE NUMBERS 0–99
       let cls = "";
+
       if (
         (typeof cell === "number" && cell >= 0 && cell <= 99) ||
         (typeof cell === "string" && /^\d{1,2}$/.test(cell))
@@ -96,7 +98,6 @@ function renderTable() {
 
       html += `<td id="${id}" class="${cls}">${displayVal}</td>`;
     });
-
     html += "</tr>";
   });
 
@@ -104,17 +105,17 @@ function renderTable() {
   table.innerHTML = html;
 }
 
-}
-
+// RESET
 function resetAll() {
   highlights = [];
   currentIndex = -1;
   Object.keys(cellMap).forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.className = "";
+    if (el) el.classList.remove("search","result","result2");
   });
 }
 
+// SEARCH ENTRY
 function search() {
   resetAll();
   searchMode.value === "group" ? runGroup() : runValue();
@@ -131,17 +132,17 @@ function runGroup() {
   const rv2 = r2 ? groups[resultGroup2.value] : [];
 
   sheetData.forEach((row, r) => {
-    row.forEach((c, i) => {
-      const v = normalizeForCompare(c);
-      const el = document.getElementById(`cell-${r}-${i}`);
+    row.forEach((cell, c) => {
+      const v = normalizeForCompare(cell);
+      const el = document.getElementById(`cell-${r}-${c}`);
       if (!el) return;
 
-      if (i === sCol && sVals.includes(v)) {
-        el.className = "search";
-        highlights.push({ r, i });
+      if (c === sCol && sVals.includes(v)) {
+        el.classList.add("search");
+        highlights.push({ r, c });
       }
-      if (i === r1 && rv1.includes(v)) el.className = "result";
-      if (r2 !== null && i === r2 && rv2.includes(v)) el.className = "result2";
+      if (c === r1 && rv1.includes(v)) el.classList.add("result");
+      if (r2 !== null && c === r2 && rv2.includes(v)) el.classList.add("result2");
     });
   });
 }
@@ -149,26 +150,26 @@ function runGroup() {
 // VALUE SEARCH
 function runValue() {
   const sCol = +searchCol.value;
-  const sv = normalizeForCompare(searchValue.value);
+  const sv  = normalizeForCompare(searchValue.value);
 
-  const r1 = +valResultCol1.value;
+  const r1  = +valResultCol1.value;
   const rv1 = normalizeForCompare(resultValue1.value);
 
-  const r2 = valResultCol2.value ? +valResultCol2.value : null;
+  const r2  = valResultCol2.value ? +valResultCol2.value : null;
   const rv2 = normalizeForCompare(resultValue2.value);
 
   sheetData.forEach((row, r) => {
-    row.forEach((c, i) => {
-      const v = normalizeForCompare(c);
-      const el = document.getElementById(`cell-${r}-${i}`);
+    row.forEach((cell, c) => {
+      const v = normalizeForCompare(cell);
+      const el = document.getElementById(`cell-${r}-${c}`);
       if (!el || v === "") return;
 
-      if (i === sCol && v === sv) {
-        el.className = "search";
-        highlights.push({ r, i });
+      if (c === sCol && v === sv) {
+        el.classList.add("search");
+        highlights.push({ r, c });
       }
-      if (i === r1 && v === rv1) el.className = "result";
-      if (r2 !== null && i === r2 && v === rv2) el.className = "result2";
+      if (c === r1 && v === rv1) el.classList.add("result");
+      if (r2 !== null && c === r2 && v === rv2) el.classList.add("result2");
     });
   });
 }
@@ -187,8 +188,8 @@ function prev() {
 }
 
 function scrollTo(p) {
-  const el = document.getElementById(`cell-${p.r}-${p.i}`);
-  if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  const el = document.getElementById(`cell-${p.r}-${p.c}`);
+  if (el) el.scrollIntoView({ behavior:"smooth", block:"center" });
 }
 
 // EXPORT
@@ -203,9 +204,7 @@ function exportCSV() {
   });
 
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.href = URL.createObjectURL(new Blob([csv], { type:"text/csv" }));
   a.download = "search_results.csv";
   a.click();
 }
-
-
